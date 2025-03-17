@@ -1,0 +1,4 @@
+ig_settings.json
+.env
+__pycache__
+*.log
