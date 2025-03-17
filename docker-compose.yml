@@ -1,9 +1,9 @@
 services:
   instagrapi:
-    build: .
+    build: ${PWD}/api
     env_file:
-      - .env
+      - ${PWD}/api/.env
     ports:
       - "${PORT}:8000"
     volumes:
-      - ${PWD}/:/app
+      - ${PWD}/api:/app
