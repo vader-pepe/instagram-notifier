@@ -1,5 +1,6 @@
 services:
   instagrapi:
+    container_name: instagrapi
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -8,6 +9,7 @@ services:
     ports:
       - "${INSTAGRAPI_PORT}:8000"
   discord-bot:
+    container_name: instagram-notifier
     build:
       context: ./bot
       dockerfile: Dockerfile
