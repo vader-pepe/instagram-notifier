@@ -1,9 +1,15 @@
 services:
   instagrapi:
-    build: ${PWD}/api
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     env_file:
       - ${PWD}/api/.env
     ports:
-      - "${PORT}:8000"
-    volumes:
-      - ${PWD}/api:/app
+      - "${INSTAGRAPI_PORT}:8000"
+  discord-bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    env_file:
+      - ${PWD}/bot/.env
