@@ -1,5 +1,12 @@
+import email
+import imaplib
+import re
+import random
 import os
 import logging
+import random
+from instagrapi import Client
+from instagrapi.mixins.challenge import ChallengeChoice
 from fastapi import FastAPI, HTTPException, Query
 from dotenv import load_dotenv
 from pydantic import BaseModel, HttpUrl
@@ -18,11 +25,79 @@ load_dotenv()
 # Retrieve credentials from environment variables
 USERNAME = os.environ.get("INSTAGRAM_USERNAME")
 PASSWORD = os.environ.get("INSTAGRAM_PASSWORD")
+CHALLENGE_EMAIL = os.environ.get("CHALLENGE_EMAIL")
+CHALLENGE_PASSWORD = os.environ.get("CHALLENGE_PASSWORD")
 CODE = str(os.environ.get("CODE_2FA"))
 SETTINGS_PATH = "ig_settings.json"
 
+# List your free proxies here.
+proxies = [
+    # "http://eibylrxi:qq84p9fff1v5@38.154.227.167:5868"
+]
+
 app = FastAPI()
 cl = Client()
+
+def rotate_proxy(client: Client):
+    """Selects a random proxy from the list and sets it on the client."""
+    if(proxies):
+        chosen_proxy = random.choice(proxies)
+        cl.set_proxy(chosen_proxy)
+        logger.info(f"Using proxy: {chosen_proxy}")
+
+def get_code_from_email(username):
+    mail = imaplib.IMAP4_SSL("imap.gmail.com")
+    mail.login(CHALLENGE_EMAIL, CHALLENGE_PASSWORD)
+    mail.select("inbox")
+    result, data = mail.search(None, "(UNSEEN)")
+    assert result == "OK", "Error1 during get_code_from_email: %s" % result
+    ids = data.pop().split()
+    for num in reversed(ids):
+        mail.store(num, "+FLAGS", "\\Seen")  # mark as read
+        result, data = mail.fetch(num, "(RFC822)")
+        assert result == "OK", "Error2 during get_code_from_email: %s" % result
+        msg = email.message_from_string(data[0][1].decode())
+        payloads = msg.get_payload()
+        if not isinstance(payloads, list):
+            payloads = [msg]
+        code = None
+        for payload in payloads:
+            body = payload.get_payload(decode=True).decode()
+            if "<div" not in body:
+                continue
+            match = re.search(">([^>]*?({u})[^<]*?)<".format(u=username), body)
+            if not match:
+                continue
+            print("Match from email:", match.group(1))
+            match = re.search(r">(\d{6})<", body)
+            if not match:
+                print('Skip this email, "code" not found')
+                continue
+            code = match.group(1)
+            if code:
+                return code
+    return False
+
+def get_code_from_sms(username):
+    while True:
+        code = input(f"Enter code (6 digits) for {username}: ").strip()
+        if code and code.isdigit():
+            return code
+    return None
+
+def challenge_code_handler(username, choice):
+    if choice == ChallengeChoice.SMS:
+        return get_code_from_sms(username)
+    elif choice == ChallengeChoice.EMAIL:
+        return get_code_from_email(username)
+    return False
+
+def change_password_handler(username):
+    # Simple way to generate a random string
+    chars = list("abcdefghijklmnopqrstuvwxyz1234567890!&£@#")
+    password = "".join(random.sample(chars, 10))
+    logger.info(f"your new password is: {password}")
+    return password
 
 
 # Attempt to load session settings to reuse cookies and device info
@@ -63,7 +138,10 @@ def login_user():
     if session:
         try:
             cl.set_settings(session)
+            cl.challenge_code_handler = challenge_code_handler
+            cl.change_password_handler = change_password_handler
             cl.login(USERNAME, PASSWORD)
+            rotate_proxy(cl)
 
             # check if session is valid
             try:
@@ -205,4 +283,5 @@ def get_stories(username: str = Query(..., description="Instagram username to fe
             taken_at=taken_at,
             expiring_at=expiring_at,
         ))
+    output.reverse()
     return output

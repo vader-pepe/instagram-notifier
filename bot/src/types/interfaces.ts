@@ -1,5 +1,8 @@
 export interface TrackedUser {
   lastPostId: string;
+  lastStoryId: string;
+  lastPostTimestamp: string;
+  lastStoryTimestamp: string;
 }
 
 export interface ChannelData {
