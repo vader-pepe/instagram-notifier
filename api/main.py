@@ -188,6 +188,7 @@ class Media(BaseModel):
     taken_at: datetime        # Converted from a Unix timestamp
     like_count: int
     comment_count: int
+    permalink: Optional[HttpUrl] = None
     video_url: Optional[HttpUrl] = None  # Only applicable for video posts
 
 
@@ -220,20 +221,24 @@ def get_post(username: str = Query(..., description="Instagram username to fetch
         # If no valid URL, skip this media item
         if not url or url.lower() == "none":
             continue
+        permalink = None
+        if hasattr(media, "code") and media.code:
+            permalink = f"https://www.instagram.com/p/{media.code}"
 
         # Convert taken_at: if it's an integer, convert from Unix timestamp; otherwise, use as-is
         taken_at = datetime.fromtimestamp(media.taken_at) if isinstance(media.taken_at, int) else media.taken_at
 
         posts.append(Media(
-            id=media.pk,
+            id = media.pk,
             # Use media_url if available, otherwise fallback to thumbnail_url
-            url=str(media.media_url) if hasattr(media, "media_url") and media.media_url else str(media.thumbnail_url),
-            caption=media.caption_text or "",
-            media_type=media.media_type,
+            url = str(media.media_url) if hasattr(media, "media_url") and media.media_url else str(media.thumbnail_url),
+            caption = media.caption_text or "",
+            media_type = media.media_type,
             taken_at = taken_at,
-            like_count=media.like_count,
-            comment_count=media.comment_count,
-            video_url=str(media.video_url) if hasattr(media, "video_url") and media.video_url else None,
+            like_count = media.like_count,
+            comment_count = media.comment_count,
+            video_url = str(media.video_url) if hasattr(media, "video_url") and media.video_url else None,
+            permalink = permalink
         ))
     return posts
 
@@ -244,6 +249,7 @@ class Story(BaseModel):
     url: HttpUrl
     media_type: int
     taken_at: datetime
+    permalink: Optional[HttpUrl] = None
     expiring_at: Optional[datetime] = None  # When the story will expire
 
 
@@ -276,12 +282,14 @@ def get_stories(username: str = Query(..., description="Instagram username to fe
         if hasattr(story, "expiring_at") and story.expiring_at:
             expiring_at = (datetime.fromtimestamp(story.expiring_at)
                            if isinstance(story.expiring_at, int) else story.expiring_at)
+        permalink = f"https://www.instagram.com/stories/{username}/{story.pk}"
         output.append(Story(
             id=story.pk,
             url=url,
             media_type=story.media_type,
             taken_at=taken_at,
             expiring_at=expiring_at,
+            permalink=permalink,
         ))
     output.reverse()
     return output

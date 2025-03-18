@@ -125,7 +125,7 @@ async function checkPosts(channelId: string, username: string, userData: Tracked
   if (latestPost.id.toString() !== storedPostId && latestPost.taken_at > userData.lastPostTimestamp) {
     const embed = InstagramEmbeds.createPostEmbed(username, {
       ...latestPost,
-      url: latestPost.url || 'https://example.com/fallback-image.png' // Add actual media URL
+      url: latestPost.permalink
     });
 
     await (channel as TextChannel).send({
@@ -165,7 +165,7 @@ async function checkStories(channelId: string, username: string, userData: Track
   if (latestStory.id.toString() !== lastStoryId && latestStory.taken_at > lastStoryTimestamp) {
     const embed = InstagramEmbeds.createStoryEmbed(username, {
       ...latestStory,
-      url: latestStory.url || 'https://example.com/story-fallback.png'
+      url: latestStory.permalink
     });
 
     await (channel as TextChannel).send({

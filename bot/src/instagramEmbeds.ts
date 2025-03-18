@@ -8,7 +8,7 @@ export class InstagramEmbeds {
     const embed = new EmbedBuilder()
       .setColor(this.BASE_COLOR)
       .setTitle(`📸 New Instagram Post from @${username}`)
-      .setURL(post.url)
+      .setURL(post.permalink)
       .setDescription(post.caption || '')
       .setFooter({ text: 'Instagram Post Notification' })
       .setTimestamp(new Date(post.taken_at) || new Date());
@@ -25,14 +25,13 @@ export class InstagramEmbeds {
     const embed = new EmbedBuilder()
       .setColor(this.BASE_COLOR)
       .setTitle(`🎥 New Instagram Story from @${username}`)
-      .setURL(story.url)
+      .setURL(story.permalink)
       .setFooter({ text: 'Instagram Story Notification' })
-      .setTimestamp(new Date(story.taken_at) || new Date());
+      .setTimestamp(new Date(story.taken_at) || new Date())
+      .setImage(story.url);
 
-    if (story.url) {
-      story.media_type === 2
-        ? embed.setDescription('**Video Story**\n').setImage(story.url)
-        : embed.setImage(story.url);
+    if (story.media_type === 2) {
+      embed.setDescription('**Video Story**\n')
     }
 
     return embed;
