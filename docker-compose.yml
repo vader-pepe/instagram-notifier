@@ -9,6 +9,8 @@ services:
     ports:
       - "${INSTAGRAPI_PORT}:8000"
   discord-bot:
+    depends_on:
+      - instagrapi
     container_name: instagram-notifier
     build:
       context: ./bot
