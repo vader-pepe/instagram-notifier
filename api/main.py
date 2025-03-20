@@ -30,7 +30,6 @@ CHALLENGE_EMAIL = os.environ.get("CHALLENGE_EMAIL")
 CHALLENGE_PASSWORD = os.environ.get("CHALLENGE_PASSWORD")
 OTP_URL = os.environ.get("OTP_URL")
 PROXIES = os.getenv("PROXIES","")
-CODE = str(os.environ.get("CODE_2FA"))
 SETTINGS_PATH = "ig_settings.json"
 
 proxy_list = [item.strip() for item in PROXIES.split(",") if item.strip()]
