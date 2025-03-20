@@ -1,6 +1,7 @@
 services:
   instagrapi:
     container_name: instagrapi
+    user: "${UID}:${GID}"
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -12,6 +13,7 @@ services:
       - "${INSTAGRAPI_PORT}:8000"
     restart: always
   discord-bot:
+    user: "${UID}:${GID}"
     depends_on:
       - instagrapi
     container_name: instagram-notifier
@@ -25,6 +27,7 @@ services:
     restart: always
   embed-fixer:
     image: ghcr.io/wikidepia/instafix:main
+    user: "${UID}:${GID}"
     environment:
         TZ: Asia/Jakarta
     depends_on:
