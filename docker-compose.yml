@@ -1,7 +1,6 @@
 services:
   instagrapi:
     container_name: instagrapi
-    user: "${UID}:${GID}"
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -27,7 +26,6 @@ services:
     restart: always
   embed-fixer:
     image: ghcr.io/wikidepia/instafix:main
-    user: "${UID}:${GID}"
     environment:
         TZ: Asia/Jakarta
     depends_on:
