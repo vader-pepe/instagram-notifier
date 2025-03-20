@@ -124,7 +124,6 @@ def first_time():
     # Log in to Instagram
     try:
         otp = get_otp(str(OTP_URL))
-        print(f"{otp}")
         cl.login(USERNAME, PASSWORD, verification_code=otp)
         logger.info("Login successful.")
     except Exception as e:
