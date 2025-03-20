@@ -4,7 +4,6 @@ import axios from "axios";
 import { ApplicationCommandOptionType, Channel, Client, GatewayIntentBits, REST, Routes, TextChannel } from "discord.js";
 import { Post, Story } from "@/api/instagram/instagramModel";
 import { Storage } from "./storage";
-import { InstagramEmbeds } from "./instagramEmbeds";
 import { TrackedUser } from "./types/interfaces";
 
 const server = app.listen(env.PORT, () => {
@@ -123,14 +122,9 @@ async function checkPosts(channelId: string, username: string, userData: Tracked
 
   // Case 1: New post detected (normal flow)
   if (latestPost.id.toString() !== storedPostId && latestPost.taken_at > userData.lastPostTimestamp) {
-    const embed = InstagramEmbeds.createPostEmbed(username, {
-      ...latestPost,
-      url: latestPost.permalink
-    });
 
     await (channel as TextChannel).send({
-      content: `📸 New post from @${username}`,
-      embeds: [embed]
+      content: `📸 **New post from @${username}**\n${latestPost.permalink}`,
     });
     storage.updateLastPost(channelId, username, latestPost.id.toString(), latestPost.taken_at);
     return;
@@ -163,14 +157,9 @@ async function checkStories(channelId: string, username: string, userData: Track
 
   // New story detection
   if (latestStory.id.toString() !== lastStoryId && latestStory.taken_at > lastStoryTimestamp) {
-    const embed = InstagramEmbeds.createStoryEmbed(username, {
-      ...latestStory,
-      url: latestStory.permalink
-    });
 
     await (channel as TextChannel).send({
-      content: `🎥 New story from @${username}`,
-      embeds: [embed]
+      content: `🎥 **New story from @${username}**\n${latestStory.permalink}`,
     });
     storage.updateLastStory(channelId, username, latestStory.id.toString(), latestStory.taken_at);
     return;

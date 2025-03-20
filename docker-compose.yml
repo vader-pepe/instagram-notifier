@@ -4,10 +4,13 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+    environment:
+        TZ: Asia/Jakarta
     env_file:
       - ${PWD}/api/.env
     ports:
       - "${INSTAGRAPI_PORT}:8000"
+    restart: always
   discord-bot:
     depends_on:
       - instagrapi
@@ -15,5 +18,19 @@ services:
     build:
       context: ./bot
       dockerfile: Dockerfile
+    environment:
+        TZ: Asia/Jakarta
     env_file:
       - ${PWD}/bot/.env
+    restart: always
+  embed-fixer:
+    image: ghcr.io/wikidepia/instafix:main
+    environment:
+        TZ: Asia/Jakarta
+    depends_on:
+      - instagrapi
+      - discord-bot
+    container_name: instafix
+    ports:
+      - "${INSTAFIX_PORT}:3000"
+    restart: always

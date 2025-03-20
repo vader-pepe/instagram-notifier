@@ -5,6 +5,7 @@ import random
 import os
 import logging
 import random
+import requests
 from instagrapi import Client
 from instagrapi.mixins.challenge import ChallengeChoice
 from fastapi import FastAPI, HTTPException, Query
@@ -27,16 +28,29 @@ USERNAME = os.environ.get("INSTAGRAM_USERNAME")
 PASSWORD = os.environ.get("INSTAGRAM_PASSWORD")
 CHALLENGE_EMAIL = os.environ.get("CHALLENGE_EMAIL")
 CHALLENGE_PASSWORD = os.environ.get("CHALLENGE_PASSWORD")
+OTP_URL = os.environ.get("OTP_URL")
+PROXIES = os.getenv("PROXIES","")
 CODE = str(os.environ.get("CODE_2FA"))
 SETTINGS_PATH = "ig_settings.json"
 
+proxy_list = [item.strip() for item in PROXIES.split(",") if item.strip()]
+
 # List your free proxies here.
-proxies = [
-    # "http://eibylrxi:qq84p9fff1v5@38.154.227.167:5868"
-]
+proxies = proxy_list
 
 app = FastAPI()
 cl = Client()
+
+def get_otp(url: str) -> str:
+    response = requests.get(url)
+    response.raise_for_status()  # Raises an HTTPError if the response code was unsuccessful.
+    json_data = response.json()
+
+    # Extract and return the OTP string.
+    otp = json_data.get("data", {}).get("otp")
+    if otp is None:
+        raise KeyError("OTP not found in the response.")
+    return otp
 
 def rotate_proxy(client: Client):
     """Selects a random proxy from the list and sets it on the client."""
@@ -110,10 +124,9 @@ def first_time():
 
     # Log in to Instagram
     try:
-        if CODE:
-            cl.login(USERNAME, PASSWORD, verification_code=CODE)
-        else:
-            cl.login(USERNAME, PASSWORD)
+        otp = get_otp("https://2fa.fb.rip/api/otp/POCGP6D7Y3MOEHTU6OPAYJJLUTLKYCRR")
+        print(f"{otp}")
+        cl.login(USERNAME, PASSWORD, verification_code=otp)
         logger.info("Login successful.")
     except Exception as e:
         logger.error(f"Error during login: {e}")
@@ -140,7 +153,8 @@ def login_user():
             cl.set_settings(session)
             cl.challenge_code_handler = challenge_code_handler
             cl.change_password_handler = change_password_handler
-            cl.login(USERNAME, PASSWORD)
+            otp = get_otp("https://2fa.fb.rip/api/otp/POCGP6D7Y3MOEHTU6OPAYJJLUTLKYCRR")
+            cl.login(USERNAME, PASSWORD, verification_code=str(otp))
             rotate_proxy(cl)
 
             # check if session is valid
@@ -223,7 +237,7 @@ def get_post(username: str = Query(..., description="Instagram username to fetch
             continue
         permalink = None
         if hasattr(media, "code") and media.code:
-            permalink = f"https://www.instagram.com/p/{media.code}"
+            permalink = f"https://instafix.sankl.my.id/p/{media.code}"
 
         # Convert taken_at: if it's an integer, convert from Unix timestamp; otherwise, use as-is
         taken_at = datetime.fromtimestamp(media.taken_at) if isinstance(media.taken_at, int) else media.taken_at
@@ -282,7 +296,7 @@ def get_stories(username: str = Query(..., description="Instagram username to fe
         if hasattr(story, "expiring_at") and story.expiring_at:
             expiring_at = (datetime.fromtimestamp(story.expiring_at)
                            if isinstance(story.expiring_at, int) else story.expiring_at)
-        permalink = f"https://www.instagram.com/stories/{username}/{story.pk}"
+        permalink = f"https://instafix.sankl.my.id/stories/{username}/{story.pk}"
         output.append(Story(
             id=story.pk,
             url=url,
