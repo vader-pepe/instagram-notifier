@@ -124,7 +124,7 @@ def first_time():
 
     # Log in to Instagram
     try:
-        otp = get_otp("https://2fa.fb.rip/api/otp/POCGP6D7Y3MOEHTU6OPAYJJLUTLKYCRR")
+        otp = get_otp(str(OTP_URL))
         print(f"{otp}")
         cl.login(USERNAME, PASSWORD, verification_code=otp)
         logger.info("Login successful.")
@@ -153,7 +153,7 @@ def login_user():
             cl.set_settings(session)
             cl.challenge_code_handler = challenge_code_handler
             cl.change_password_handler = change_password_handler
-            otp = get_otp("https://2fa.fb.rip/api/otp/POCGP6D7Y3MOEHTU6OPAYJJLUTLKYCRR")
+            otp = get_otp(OTP_URL)
             cl.login(USERNAME, PASSWORD, verification_code=str(otp))
             rotate_proxy(cl)
 
