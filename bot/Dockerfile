@@ -25,6 +25,8 @@ WORKDIR /app
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 
+RUN chown -R node:node /app
+
 # Use the node user from the image
 USER node
 

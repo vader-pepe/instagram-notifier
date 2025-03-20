@@ -12,7 +12,6 @@ services:
       - "${INSTAGRAPI_PORT}:8000"
     restart: always
   discord-bot:
-    user: "${UID}:${GID}"
     depends_on:
       - instagrapi
     container_name: instagram-notifier
