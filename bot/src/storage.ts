@@ -11,7 +11,7 @@ export class Storage {
 
   private loadData() {
     try {
-      const rawData = fs.readFileSync("tracking.json", "utf8");
+      const rawData = fs.readFileSync("data/tracking.json", "utf8");
       this.data = JSON.parse(rawData);
     } catch (error) {
       this.data = { channels: {} };
@@ -23,7 +23,7 @@ export class Storage {
   }
 
   private saveData() {
-    fs.writeFileSync("tracking.json", JSON.stringify(this.data, null, 2));
+    fs.writeFileSync("data/tracking.json", JSON.stringify(this.data, null, 2));
   }
 
   getChannelData(channelId: string): ChannelData {
