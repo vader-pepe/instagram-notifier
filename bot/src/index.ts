@@ -193,9 +193,11 @@ async function checkInstagramUpdates() {
         const channel = await client.channels.fetch(channelId);
         if (channel?.isTextBased() && !channel.isDMBased()) {
           // Check posts with validation
+          await new Promise(r => setTimeout(r, 1000));
           await checkPosts(channelId, username, userData, channel);
 
           // Check stories with validation
+          await new Promise(r => setTimeout(r, 1000));
           await checkStories(channelId, username, userData, channel);
         }
       } catch (error) {

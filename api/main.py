@@ -235,7 +235,7 @@ def get_post(username: str = Query(..., description="Instagram username to fetch
             continue
         permalink = None
         if hasattr(media, "code") and media.code:
-            permalink = f"https://instafix.sankl.my.id/p/{media.code}"
+            permalink = f"https://www.instagram.com/p/{media.code}"
 
         # Convert taken_at: if it's an integer, convert from Unix timestamp; otherwise, use as-is
         taken_at = datetime.fromtimestamp(media.taken_at) if isinstance(media.taken_at, int) else media.taken_at
@@ -294,7 +294,7 @@ def get_stories(username: str = Query(..., description="Instagram username to fe
         if hasattr(story, "expiring_at") and story.expiring_at:
             expiring_at = (datetime.fromtimestamp(story.expiring_at)
                            if isinstance(story.expiring_at, int) else story.expiring_at)
-        permalink = f"https://instafix.sankl.my.id/stories/{username}/{story.pk}"
+        permalink = f"https://www.instagram.com/stories/{username}/{story.pk}"
         output.append(Story(
             id=story.pk,
             url=url,
